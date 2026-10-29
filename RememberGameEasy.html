@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมจำสี (Color Memory Game)</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Kanit', 'Sarabun', Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f7f6;
+            color: #2d3748;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            overflow: hidden;
+            text-align: center;
+            padding-bottom: 30px;
+            margin: 15px;
+        }
+
+        .progress-box {
+            background: #ffffff;
+            padding: 25px 20px 15px;
+            border-bottom: 1px solid #edf2f7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .circle.active {
+            width: 40px;
+            height: 40px;
+            background: #ff6b21;
+            border: 4px solid #ffc3a5;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(255, 107, 33, 0.3);
+        }
+
+        .circle.completed {
+            background: #27ae60;
+        }
+
+        .line {
+            width: 25px;
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 2px;
+        }
+
+        .score-text {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 18px;
+            background: #71ccc0;
+            color: #ffffff;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        #startPage {
+            padding: 25px 20px 10px;
+        }
+
+        .title {
+            display: inline-block;
+            background: #71ccc0;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .description {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 18px 10px;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .example-box {
+            background: #ffe7d8;
+            margin: 15px 15px;
+            padding: 20px 15px;
+            border-radius: 16px;
+        }
+
+        .example-square {
+            width: 120px;
+            height: 120px;
+            background: #ffffff;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .example-color {
+            width: 65px;
+            height: 65px;
+            background: #2f80ed;
+            border-radius: 12px;
+        }
+
+        .example-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .example-btn {
+            width: 75px;
+            height: 48px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .red { background: #ff3030; }
+        .blue { background: #2f80ed; }
+        .green { background: #27ae60; }
+
+        .rule {
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 2;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .start-button {
+            margin-top: 25px;
+            padding: 14px 50px;
+            border: none;
+            border-radius: 12px;
+            background: #2f80ed;
+            color: white;
+            font-size: 19px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.3);
+            transition: transform 0.1s ease, background 0.2s ease;
+        }
+
+        .start-button:active {
+            transform: scale(0.98);
+        }
+
+        #gamePage {
+            display: none;
+            padding: 25px 20px;
+        }
+
+        .game-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .color-area {
+            background: #ffe7d8;
+            margin: 0 10px;
+            padding: 30px 20px;
+            border-radius: 16px;
+        }
+
+        .color-square {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            border-radius: 18px;
+            background: #2f80ed;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+
+        .remember-text {
+            margin-top: 20px;
+            font-size: 19px;
+            font-weight: bold;
+            min-height: 28px;
+            color: #2d3748;
+        }
+
+        .answer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .answer-button {
+            width: 85px;
+            height: 60px;
+            border: none;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            background: #718096;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+            transition: all 0.2s ease;
+        }
+
+        .answer-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: #4a5568;
+        }
+
+        .answer-button:disabled {
+            background: #cbd5e0 !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #resultPage {
+            display: none;
+            padding: 40px 20px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .result-score {
+            font-size: 52px;
+            font-weight: 800;
+            color: #ff6b21;
+            margin: 20px 0;
+        }
+
+        .result-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            padding: 0 15px;
+        }
+
+        .restart-button {
+            padding: 14px 45px;
+            border: none;
+            border-radius: 12px;
+            background: #2f80ed;
+            color: white;
+            font-size: 19px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .restart-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="progress-box">
+        <div class="progress">
+            <div class="circle active" id="p1">1</div>
+            <div class="line"></div>
+            <div class="circle" id="p2">2</div>
+            <div class="line"></div>
+            <div class="circle" id="p3">3</div>
+            <div class="line"></div>
+            <div class="circle" id="p4">4</div>
+            <div class="line"></div>
+            <div class="circle" id="p5">5</div>
+            <div class="line"></div>
+            <div class="circle" id="pStar">★</div>
+        </div>
+
+        <div class="score-text" id="progressText">
+            เกมทดสอบ 1/5
+        </div>
+    </div>
+
+    <div id="startPage">
+        <div class="title">วิธีเล่น</div>
+        <div class="description">
+            เกมจะแสดงรูปภาพสิ่งของที่มีสีต่างๆ ให้จดจำก่อนสีจะหายไป
+        </div>
+
+        <div class="example-box">
+            <div class="example-square">
+                <div class="example-color"></div>
+            </div>
+            <div class="example-buttons">
+                <button class="example-btn red">1</button>
+                <button class="example-btn blue">2</button>
+                <button class="example-btn green">3</button>
+            </div>
+        </div>
+
+        <div class="rule">
+            <div class="rule-item">กดเลข 1 <span style="color:#ff3030;">ถ้าสิ่งของเป็นสีแดง</span></div>
+            <div class="rule-item">กดเลข 2 <span style="color:#2f80ed;">ถ้าสิ่งของเป็นสีฟ้า</span></div>
+            <div class="rule-item">กดเลข 3 <span style="color:#27ae60;">ถ้าสิ่งของเป็นสีเขียว</span></div>
+        </div>
+
+        <button class="start-button" onclick="startGame()">
+            เริ่มเกม
+        </button>
+    </div>
+
+    <div id="gamePage">
+        <div class="game-title" id="gameTitle">
+            จำสีที่แสดงให้ได้!
+        </div>
+
+        <div class="color-area">
+            <div id="colorSquare" class="color-square"></div>
+            <div id="rememberText" class="remember-text">จำสีนี้ไว้...</div>
+
+            <div class="answer-buttons">
+                <button id="btn1" class="answer-button" onclick="answer(1)">1</button>
+                <button id="btn2" class="answer-button" onclick="answer(2)">2</button>
+                <button id="btn3" class="answer-button" onclick="answer(3)">3</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultPage">
+        <div class="result-title">จบเกม!</div>
+        <div class="result-score" id="finalScore">0 / 5</div>
+        <div class="result-message" id="resultMessage"></div>
+
+        <button class="restart-button" id="actionBtn" onclick="nextLevel()">
+            ระดับถัดไป
+        </button>
+    </div>
+
+</div>
+
+<script>
+    const colors = [
+        { name: "แดง", code: "#ff3030", answer: 1 },
+        { name: "ฟ้า", code: "#2f80ed", answer: 2 },
+        { name: "เขียว", code: "#27ae60", answer: 3 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let correctAnswer = 0;
+    let currentLevel = 1;
+    let timer = null;
+    let timeLeft = 5;
+
+    function startGame() {
+        currentLevel = 1;
+        startLevel();
+    }
+
+    function startLevel() {
+        currentQuestion = 0;
+        score = 0;
+
+        document.getElementById("startPage").style.display = "none";
+        document.getElementById("resultPage").style.display = "none";
+        document.getElementById("gamePage").style.display = "block";
+
+        if (currentLevel === 1) {
+            document.getElementById("gameTitle").innerText = "จำสีที่แสดงให้ได้!";
+        } else {
+            document.getElementById("gameTitle").innerText = "ระดับ 2: จำสี + จับเวลา 5 วินาที!";
+        }
+
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        clearInterval(timer);
+        currentQuestion++;
+        updateProgress();
+
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        correctAnswer = randomColor.answer;
+
+        const square = document.getElementById("colorSquare");
+        const text = document.getElementById("rememberText");
+        const buttons = document.querySelectorAll(".answer-button");
+
+        square.style.backgroundColor = randomColor.code;
+        text.style.color = "#2d3748";
+        text.innerText = "จำสีนี้ไว้...";
+
+        buttons.forEach(button => {
+            button.disabled = true;
+        });
+
+        setTimeout(function() {
+
+            buttons.forEach(button => {
+                button.disabled = false;
+            });
+
+            if (currentLevel === 2) {
+                timeLeft = 5;
+                text.innerText = "เลือกหมายเลขเลย! (เหลือเวลา " + timeLeft + " วิ)";
+
+                timer = setInterval(function() {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        text.innerText = "เลือกหมายเลขเลย! (เหลือเวลา " + timeLeft + " วิ)";
+                    } else {
+                        clearInterval(timer);
+                        text.style.color = "#ff3030";
+                        text.innerText = "⏰ หมดเวลา!";
+
+                        buttons.forEach(button => {
+                            button.disabled = true;
+                        });
+
+                        setTimeout(function() {
+                            if (currentQuestion >= 5) {
+                                showResult();
+                            } else {
+                                nextQuestion();
+                            }
+                        }, 800);
+                    }
+                }, 1000);
+            } else {
+                text.innerText = "เลือกหมายเลขเลยครับ";
+            }
+
+        }, 1500);
+    }
+
+    function answer(number) {
+        clearInterval(timer);
+        const buttons = document.querySelectorAll(".answer-button");
+        const text = document.getElementById("rememberText");
+
+        buttons.forEach(button => {
+            button.disabled = true;
+        });
+
+        if (number === correctAnswer) {
+            score++;
+            text.style.color = "#27ae60";
+            text.innerText = "✓ ถูกต้อง!";
+        } else {
+            text.style.color = "#ff3030";
+            text.innerText = "✗ ผิดครับ!";
+        }
+
+        setTimeout(function() {
+            if (currentQuestion >= 5) {
+                showResult();
+            } else {
+                nextQuestion();
+            }
+        }, 800);
+    }
+
+    function updateProgress() {
+        const levelPrefix = currentLevel === 1 ? "เกมทดสอบ " : "ระดับ 2 - ข้อ ";
+        document.getElementById("progressText").innerText = levelPrefix + currentQuestion + "/5";
+
+        for (let i = 1; i <= 5; i++) {
+            const circle = document.getElementById("p" + i);
+            circle.classList.remove("active");
+            if (i < currentQuestion) {
+                circle.classList.add("completed");
+            } else {
+                circle.classList.remove("completed");
+            }
+        }
+
+        const currentCircle = document.getElementById("p" + currentQuestion);
+        if (currentCircle) {
+            currentCircle.classList.add("active");
+            currentCircle.classList.remove("completed");
+        }
+
+        const star = document.getElementById("pStar");
+        if (currentQuestion > 5) {
+            star.classList.add("active");
+        } else {
+            star.classList.remove("active");
+        }
+    }
+
+    // บันทึกคะแนนเข้า localStorage
+    function saveScoreToStorage() {
+        let list = JSON.parse(localStorage.getItem("elderlyList")) || [];
+        if (list.length > 0) {
+            let currentIndex = localStorage.getItem("currentUserIndex") !== null 
+                ? parseInt(localStorage.getItem("currentUserIndex")) 
+                : list.length - 1;
+
+            if (list[currentIndex]) {
+                if (currentLevel === 1) {
+                    list[currentIndex].untimedScore = score;
+                } else if (currentLevel === 2) {
+                    list[currentIndex].timedScore = score;
+                }
+                localStorage.setItem("elderlyList", JSON.stringify(list));
+            }
+        }
+    }
+
+    function showResult() {
+        clearInterval(timer);
+        
+        // บันทึกคะแนนลงในระบบบันทึกรายชื่อ
+        saveScoreToStorage();
+
+        document.getElementById("gamePage").style.display = "none";
+        document.getElementById("resultPage").style.display = "block";
+        document.getElementById("finalScore").innerText = score + " / 5";
+
+        const btn = document.getElementById("actionBtn");
+        let message = "";
+
+        if (currentLevel === 1) {
+            if (score === 5) {
+                message = "ยอดเยี่ยมมาก! จำสีได้ครบทุกข้อ 🎉";
+            } else if (score >= 3) {
+                message = "ทำได้ดีมาก! ลองไปต่อในระดับถัดไปนะ 👍";
+            } else {
+                message = "ลองสู้ใหม่อีกครั้งในระดับถัดไปนะ! ✌️";
+            }
+            btn.innerText = "ระดับถัดไป";
+            btn.onclick = nextLevel;
+        } else {
+            if (score === 5) {
+                message = "สุดยอดมาก! ผ่านระดับ 2 จับเวลาได้คะแนนเต็ม 🏆";
+            } else if (score >= 3) {
+                message = "เก่งมาก! ทำได้ดีในระดับจับเวลา ⭐";
+            } else {
+                message = "ระดับ 2 ท้าทายใช่ไหมล่ะ ลองฝึกใหม่อีกรอบนะ! ✌️";
+            }
+            btn.innerText = "ไปที่หน้ารายชื่อ";
+            btn.onclick = function() {
+                location.href = "namelist.html";
+            };
+        }
+
+        document.getElementById("resultMessage").innerText = message;
+    }
+
+    function nextLevel() {
+        currentLevel = 2;
+        startLevel();
+    }
+
+    function restartGame() {
+        clearInterval(timer);
+        document.getElementById("resultPage").style.display = "none";
+        document.getElementById("startPage").style.display = "block";
+
+        currentLevel = 1;
+        currentQuestion = 0;
+        score = 0;
+
+        for (let i = 1; i <= 5; i++) {
+            const circle = document.getElementById("p" + i);
+            circle.classList.remove("active", "completed");
+        }
+
+        document.getElementById("p1").classList.add("active");
+        document.getElementById("pStar").classList.remove("active");
+        document.getElementById("progressText").innerText = "เกมทดสอบ 1/5";
+    }
+</script>
+
+</body>
+</html>

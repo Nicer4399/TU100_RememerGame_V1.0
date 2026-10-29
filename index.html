@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียน - วัยสุขสันต์ ใจผูกพัน</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Prompt', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #a2d244 0%, #4e9f27 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #2d3748;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .container {
+            background: #fdfbf7;
+            padding: 30px 25px;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 24px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.18),
+                        0 4px 10px rgba(0,0,0,0.08);
+            border: 4px solid #ffffff;
+            position: relative;
+        }
+
+        .header-banner {
+            background: #f4eee1;
+            padding: 16px 12px;
+            border-radius: 16px;
+            border: 1px dashed #c2b59b;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .header-banner h1 {
+            margin: 0;
+            color: #2d241e;
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .header-banner .subtitle {
+            margin-top: 6px;
+            color: #52473f;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #3b422a;
+            font-size: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #d2e3c8;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #4e9f27;
+            box-shadow: 0 0 0 3px rgba(78, 159, 39, 0.2);
+        }
+
+        /* ปิดการใช้งานฟอร์มจนกว่าจะยินยอม */
+        .container.form-locked input,
+        .container.form-locked .btn-register {
+            opacity: 0.55;
+            pointer-events: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-register {
+            background: linear-gradient(180deg, #52a926 0%, #3e881c 100%);
+            color: white;
+            margin-top: 22px;
+            box-shadow: 0 4px 12px rgba(62, 136, 28, 0.35);
+        }
+
+        .btn-register:hover {
+            background: linear-gradient(180deg, #46961f 0%, #337316 100%);
+            transform: translateY(-1px);
+        }
+
+        .list-button {
+            background: #796e65;
+            color: white;
+            margin-top: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+
+        .list-button:hover {
+            background: #61574f;
+        }
+
+        .footer-text {
+            text-align: right;
+            font-size: 12px;
+            color: #8c8275;
+            margin-top: 18px;
+            font-weight: 500;
+        }
+
+        /* พื้นหลัง Popup */
+        .consent-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 35, 18, 0.72);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            z-index: 9999;
+        }
+
+        .consent-overlay[hidden] {
+            display: none;
+        }
+
+        /* กล่อง Popup */
+        .consent-modal {
+            background: #ffffff;
+            width: 100%;
+            max-width: 540px;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: popupShow 0.25s ease;
+        }
+
+        @keyframes popupShow {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .consent-header {
+            background: #4e9f27;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .consent-header h2 {
+            font-size: 21px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .consent-header p {
+            font-size: 13px;
+            margin: 5px 0 0;
+            opacity: 0.95;
+        }
+
+        .consent-content {
+            padding: 20px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            color: #374151;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .consent-content h3 {
+            color: #357d20;
+            font-size: 16px;
+            margin: 0 0 10px;
+        }
+
+        .consent-content p {
+            margin: 0 0 14px;
+            text-align: left;
+        }
+
+        .consent-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #f3f8ee;
+            border: 1px solid #d2e3c8;
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 8px;
+            cursor: pointer;
+            font-weight: 400;
+            color: #2d3748;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .consent-check input {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            margin: 3px 0 0;
+            accent-color: #4e9f27;
+            cursor: pointer;
+        }
+
+        .consent-actions {
+            display: flex;
+            gap: 10px;
+            padding: 16px 20px 20px;
+            border-top: 1px solid #eeeeee;
+            flex-shrink: 0;
+        }
+
+        .consent-actions button {
+            flex: 1;
+            padding: 12px 8px;
+            font-size: 14px;
+        }
+
+        .btn-decline {
+            background: #eeeeee;
+            color: #4b5563;
+        }
+
+        .btn-decline:hover {
+            background: #dddddd;
+        }
+
+        .btn-consent {
+            background: #4e9f27;
+            color: white;
+        }
+
+        .btn-consent:hover:not(:disabled) {
+            background: #3e881c;
+        }
+
+        .btn-consent:disabled {
+            background: #a8bca0;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 22px 18px;
+            }
+
+            .consent-overlay {
+                padding: 10px;
+            }
+
+            .consent-modal {
+                max-height: 92vh;
+                border-radius: 16px;
+            }
+
+            .consent-header {
+                padding: 16px 12px;
+            }
+
+            .consent-header h2 {
+                font-size: 18px;
+            }
+
+            .consent-content {
+                padding: 16px;
+                font-size: 13px;
+            }
+
+            .consent-actions {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .consent-actions button {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body class="modal-open">
+
+<div class="container form-locked" id="registerContainer">
+
+    <div class="header-banner">
+        <h1>วัยสุขสันต์<br>ใจผูกพัน</h1>
+        <div class="subtitle">
+            ณ ศูนย์สันทนาการและฟื้นฟูผู้สูงอายุบึงยี่โถ
+        </div>
+    </div>
+
+    <label for="name">ชื่อผู้สูงอายุ</label>
+    <input type="text" id="name" placeholder="กรอกชื่อ-นามสกุล" disabled>
+
+    <label for="age">อายุ</label>
+    <input type="number" id="age" placeholder="กรอกอายุ (ปี)"
+           min="1" max="120" step="1" disabled>
+
+    <label for="score">คะแนนที่คาดว่าจะทำได้ (เต็ม 5)</label>
+    <input type="number" id="score" min="0" max="5" step="0.5"
+           placeholder="กรอกคะแนน (0 - 5)" disabled>
+
+    <button class="btn-register" id="registerButton"
+            onclick="register()" disabled>
+        ลงทะเบียน
+    </button>
+
+    <button class="list-button"
+            onclick="location.href='namelist.html'">
+        ดูรายชื่อผู้ลงทะเบียน
+    </button>
+
+    <div class="footer-text">
+        ห้องย่อย 14 กลุ่ม 4
+    </div>
+
+</div>
+
+<!-- Popup ขอความยินยอม PDPA -->
+<div class="consent-overlay" id="consentOverlay">
+    <section class="consent-modal"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="consentTitle"
+             aria-describedby="consentDescription">
+
+        <div class="consent-header">
+            <h2 id="consentTitle">
+                การแจ้งข้อมูลและขอความยินยอม
+            </h2>
+            <p>การเก็บรวบรวมข้อมูลส่วนบุคคล (PDPA)</p>
+        </div>
+
+        <div class="consent-content" id="consentDescription">
+
+            <h3>เรียน ผู้เข้าร่วมกิจกรรม</h3>
+
+            <p>
+                คณะผู้จัดทำโครงงานวัยสุขสันต์ใจผูกพัน
+                ขอแจ้งให้ท่านทราบว่า แบบสอบถามและข้อมูลจากการเข้าร่วมกิจกรรมนี้
+                จัดทำขึ้นเพื่อเก็บรวบรวมข้อมูลและความคิดเห็นของผู้เข้าร่วมกิจกรรม
+                สำหรับใช้ประกอบการดำเนินโครงงาน การวิเคราะห์ผล
+                และการประเมินผลกิจกรรมที่จัดขึ้นสำหรับผู้สูงอายุ
+            </p>
+
+            <p>
+                ข้อมูลที่ท่านให้จะถูกนำไปใช้เพื่อวัตถุประสงค์ของโครงงานดังกล่าวเท่านั้น
+                คณะผู้จัดทำจะเก็บรักษาข้อมูลอย่างเหมาะสม จำกัดการเข้าถึงเฉพาะผู้ที่เกี่ยวข้อง
+                และนำเสนอผลในภาพรวมโดยหลีกเลี่ยงการเปิดเผยข้อมูลที่สามารถระบุตัวบุคคลได้
+                ทั้งนี้ จะไม่มีการนำข้อมูลไปใช้เพื่อวัตถุประสงค์อื่นนอกเหนือจากที่แจ้งไว้
+                เว้นแต่จะมีฐานกฎหมายรองรับหรือได้รับความยินยอมตามที่กฎหมายกำหนด
+            </p>
+
+            <p>
+                การให้ข้อมูลเป็นไปโดยสมัครใจ ท่านสามารถอ่านรายละเอียดและตัดสินใจก่อนให้ความยินยอมได้
+                หากไม่ประสงค์ให้ความยินยอม ท่านสามารถเลือกไม่ตอบแบบสอบถามได้
+                โดยสามารถสอบถามรายละเอียดเพิ่มเติมจากคณะผู้จัดทำโครงงาน
+            </p>
+
+            <h3>การยืนยันความยินยอม</h3>
+
+            <label class="consent-check" for="consentCheckbox">
+                <input type="checkbox" id="consentCheckbox">
+
+                <span>
+                    ข้าพเจ้าได้อ่านและเข้าใจรายละเอียดข้างต้นแล้ว
+                    และยินยอมให้เก็บรวบรวมและใช้ข้อมูลที่ข้าพเจ้าให้
+                    เพื่อวัตถุประสงค์ในการดำเนินโครงงานและประเมินผลกิจกรรม
+                    ตามที่แจ้งไว้
+                </span>
+            </label>
+
+        </div>
+
+        <div class="consent-actions">
+            <button type="button" class="btn-decline"
+                    onclick="declineConsent()">
+                ไม่ยินยอม
+            </button>
+
+            <button type="button" class="btn-consent"
+                    id="confirmConsent" disabled
+                    onclick="acceptConsent()">
+                ยืนยันความยินยอม
+            </button>
+        </div>
+
+    </section>
+</div>
+
+<script>
+    const overlay = document.getElementById("consentOverlay");
+    const checkbox = document.getElementById("consentCheckbox");
+    const confirmButton = document.getElementById("confirmConsent");
+    const registerContainer = document.getElementById("registerContainer");
+
+    // ต้องติ๊กยินยอมก่อน จึงกดปุ่มยืนยันได้
+    checkbox.addEventListener("change", function () {
+        confirmButton.disabled = !checkbox.checked;
+    });
+
+    // ยืนยันความยินยอม
+    function acceptConsent() {
+        if (!checkbox.checked) {
+            alert("กรุณาอ่านรายละเอียดและติ๊กยืนยันความยินยอมก่อน");
+            return;
+        }
+
+        overlay.hidden = true;
+        document.body.classList.remove("modal-open");
+        registerContainer.classList.remove("form-locked");
+
+        document.getElementById("name").disabled = false;
+        document.getElementById("age").disabled = false;
+        document.getElementById("score").disabled = false;
+        document.getElementById("registerButton").disabled = false;
+
+        document.getElementById("name").focus();
+    }
+
+    // ไม่ยินยอม: ไม่อนุญาตให้กรอกแบบฟอร์ม
+    function declineConsent() {
+        alert(
+            "ท่านไม่ได้ให้ความยินยอม จึงไม่สามารถดำเนินการลงทะเบียนต่อได้\n\n" +
+            "ท่านสามารถปิดหน้านี้ได้ โดยไม่มีการบันทึกข้อมูลจากแบบฟอร์ม"
+        );
+    }
+
+    // ลงทะเบียน
+    function register() {
+        const name = document.getElementById("name").value.trim();
+        const age = document.getElementById("age").value.trim();
+        const score = document.getElementById("score").value.trim();
+
+        if (overlay.hidden === false) {
+            alert("กรุณาดำเนินการยืนยันความยินยอมก่อน");
+            return;
+        }
+
+        if (name === "" || age === "" || score === "") {
+            alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            return;
+        }
+
+        const ageVal = Number(age);
+        if (!Number.isInteger(ageVal) || ageVal < 1 || ageVal > 120) {
+            alert("กรุณากรอกอายุเป็นจำนวนเต็มระหว่าง 1 ถึง 120 ปี");
+            return;
+        }
+
+        const scoreVal = parseFloat(score);
+
+        if (isNaN(scoreVal) || scoreVal < 0 || scoreVal > 5) {
+            alert("กรุณากรอกคะแนนระหว่าง 0 ถึง 5");
+            return;
+        }
+
+        if ((scoreVal * 2) % 1 !== 0) {
+            alert("กรุณากรอกคะแนนทีละ 0.5 คะแนน");
+            return;
+        }
+
+        const now = new Date();
+
+        const dateTime = now.toLocaleString("th-TH", {
+            dateStyle: "short",
+            timeStyle: "medium"
+        });
+
+        const elderly = {
+            name: name,
+            age: ageVal,
+            score: scoreVal,
+            time: dateTime
+        };
+
+        let list = [];
+
+        try {
+            list = JSON.parse(localStorage.getItem("elderlyList")) || [];
+
+            if (!Array.isArray(list)) {
+                list = [];
+            }
+
+            list.push(elderly);
+
+            localStorage.setItem("elderlyList", JSON.stringify(list));
+            localStorage.setItem("currentUserIndex", list.length - 1);
+
+        } catch (error) {
+            alert("ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบพื้นที่จัดเก็บของเบราว์เซอร์");
+            return;
+        }
+
+        alert("ลงทะเบียนเรียบร้อยแล้ว");
+
+        window.location.href = "RememberGameEasy.html";
+    }
+</script>
+
+</body>
+</html>

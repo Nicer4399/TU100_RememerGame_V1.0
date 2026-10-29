@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายชื่อผู้สูงอายุ</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f7;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-top: 0;
+        }
+
+        /* พื้นที่เลื่อนตาราง */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 25px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1000px;
+            border-collapse: collapse;
+            margin-top: 0;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+            font-size: 15px;
+            overflow-wrap: break-word;
+        }
+
+        th {
+            background: #2B8FED;
+            color: white;
+            min-width: 120px;
+        }
+
+        th:first-child,
+        td:first-child {
+            min-width: 60px;
+        }
+
+        th:last-child,
+        td:last-child {
+            min-width: 90px;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #2B8FED;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        button:hover {
+            background: #1675cc;
+        }
+
+        .btn-back {
+            background: #6c757d;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+        }
+
+        .delete {
+            background: #e74c3c;
+            margin: 0;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .delete:hover {
+            background: #c0392b;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 25px;
+            color: #777;
+        }
+
+        .scroll-hint {
+            display: none;
+            color: #666;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        /* ปรับหน้าจอมือถือ */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 18px 12px;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 23px;
+                line-height: 1.5;
+            }
+
+            table {
+                min-width: 1000px;
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn-group button {
+                width: 100%;
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .delete {
+                width: auto !important;
+                padding: 8px 12px !important;
+            }
+
+            .scroll-hint {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>รายชื่อผู้สูงอายุ</h1>
+
+    <p class="scroll-hint">
+        ← เลื่อนตารางไปทางซ้ายหรือขวาเพื่อดูข้อมูลทั้งหมด →
+    </p>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ลำดับ</th>
+                    <th>ชื่อ</th>
+                    <th>อายุ</th>
+                    <th>คะแนนที่คาดว่าจะทำได้</th>
+                    <th>คะแนนที่ทำได้เมื่อไม่จับเวลา</th>
+                    <th>คะแนนที่ทำได้เมื่อจับเวลาข้อละ 5 วินาที</th>
+                    <th>เวลาที่ลงทะเบียน</th>
+                    <th>จัดการ</th>
+                </tr>
+            </thead>
+
+            <tbody id="nameList"></tbody>
+        </table>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-back" onclick="location.href='index.html'">
+            ← กลับหน้าลงทะเบียน
+        </button>
+
+        <button onclick="location.href='index.html'">
+            + ลงทะเบียนเพิ่ม
+        </button>
+    </div>
+
+</div>
+
+<script>
+    function showList() {
+        const list = JSON.parse(
+            localStorage.getItem("elderlyList")
+        ) || [];
+
+        const table = document.getElementById("nameList");
+
+        table.innerHTML = "";
+
+        if (list.length === 0) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+
+            cell.colSpan = 8;
+            cell.className = "empty-message";
+            cell.textContent = "ยังไม่มีรายชื่อผู้สูงอายุ";
+
+            row.appendChild(cell);
+            table.appendChild(row);
+
+            return;
+        }
+
+        list.forEach((person, index) => {
+            const row = document.createElement("tr");
+
+            // สร้างเซลล์ข้อมูล
+            const values = [
+                index + 1,
+                person.name ?? "-",
+                person.age != null ? person.age + " ปี" : "-",
+                person.score != null ? person.score + " / 5" : "-",
+                person.untimedScore != null
+                    ? person.untimedScore + " / 5"
+                    : "-",
+                person.timedScore != null
+                    ? person.timedScore + " / 5"
+                    : "-",
+                person.time ?? "-"
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+
+            // ปุ่มลบ
+            const actionCell = document.createElement("td");
+            const deleteButton = document.createElement("button");
+
+            deleteButton.className = "delete";
+            deleteButton.textContent = "ลบ";
+            deleteButton.onclick = function () {
+                deletePerson(index);
+            };
+
+            actionCell.appendChild(deleteButton);
+            row.appendChild(actionCell);
+
+            table.appendChild(row);
+        });
+    }
+
+    function deletePerson(index) {
+        if (!confirm("ต้องการลบรายชื่อนี้หรือไม่?")) {
+            return;
+        }
+
+        let list = JSON.parse(
+            localStorage.getItem("elderlyList")
+        ) || [];
+
+        list.splice(index, 1);
+
+        localStorage.setItem(
+            "elderlyList",
+            JSON.stringify(list)
+        );
+
+        showList();
+    }
+
+    showList();
+</script>
+
+</body>
+</html>
